@@ -42,6 +42,10 @@ $grpID = $fc->getFundamentals('AAPL-USA','FF_SALES','2019-07-30','2020-07-30','A
 // echo "</pre>";
 ?>
 
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
 <div class="container mt-5">
     <h2>Rolling Consensus Data</h2>
     <table class="table table-striped">
@@ -64,8 +68,14 @@ $grpID = $fc->getFundamentals('AAPL-USA','FF_SALES','2019-07-30','2020-07-30','A
         if (!empty($responseBody)) {
             $data = json_decode($responseBody, true);
             if (isset($data['data'])) {
-                // Iterate through the data and display it in the table
-                foreach ($data['data'] as $row) {
+                $perPage = 10;
+                $currentPage = isset($_GET['page']) ? $_GET['page'] : 1;
+                $totalItems = count($data['data']);
+                $startIndex = ($currentPage - 1) * $perPage;
+                $dataSlice = array_slice($data['data'], $startIndex, $perPage);
+
+                // Iterate through the data slice and display it in the table
+                foreach ($dataSlice as $row) {
                     echo '<tr>';
                     echo '<td>' . $row['requestId'] . '</td>';
                     echo '<td>' . $row['fsymId'] . '</td>';
@@ -86,4 +96,16 @@ $grpID = $fc->getFundamentals('AAPL-USA','FF_SALES','2019-07-30','2020-07-30','A
         ?>
         </tbody>
     </table>
+    <nav aria-label="Pagination">
+        <ul class="pagination">
+            <?php
+            // Calculate and generate pagination links
+            $totalPages = ceil($totalItems / $perPage);
+            for ($page = 1; $page <= $totalPages; $page++) {
+                $activeClass = ($page == $currentPage) ? ' active' : '';
+                echo '<li class="page-item' . $activeClass . '"><a class="page-link" href="?page=' . $page . '">' . $page . '</a></li>';
+            }
+            ?>
+        </ul>
+    </nav>
 </div>
